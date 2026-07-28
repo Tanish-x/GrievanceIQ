@@ -5,7 +5,7 @@ const path = require('path');
 
 class EnvironmentConfig {
     constructor() {
-        this.envPath = path.join(__dirname, '..', '.env');
+        this.envPath = path.join(__dirname, '..', '..', '.env');
         this.requiredVars = {
             'Application': ['NODE_ENV', 'PORT', 'CORS_ORIGIN'],
             'Database': ['DB_HOST', 'DB_NAME', 'SQLITE_DB_PATH'],

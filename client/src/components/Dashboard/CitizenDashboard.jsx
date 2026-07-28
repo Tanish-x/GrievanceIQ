@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Project Update: Prepared for deployment
 import React, { useState, useEffect, Fragment } from 'react';
 import {

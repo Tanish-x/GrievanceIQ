@@ -5,7 +5,7 @@
  */
 
 const { ethers } = require('ethers');
-const config = require('../../config/env-config');
+const config = require('../config/env-config');
 
 class Web3Service {
     constructor() {

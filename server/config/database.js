@@ -7,7 +7,7 @@ require('dotenv').config();
 const config = {
   development: {
     dialect: 'sqlite',
-    storage: path.resolve(__dirname, '..', 'server', 'database', 'bharatchain.db'),
+    storage: path.resolve(__dirname, '..', 'database', 'bharatchain.db'),
     logging: false,
     define: {
       timestamps: true,

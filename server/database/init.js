@@ -1,5 +1,5 @@
 // Project Update: Prepared for deployment
-const { sequelize, syncDatabase } = require('../../config/database');
+const { sequelize, syncDatabase } = require('../config/database');
 const { User, Document, Grievance } = require('../models');
 const bcrypt = require('bcryptjs');
 const path = require('path');
