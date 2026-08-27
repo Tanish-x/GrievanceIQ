@@ -8,11 +8,11 @@ const http = require('http');
 require('dotenv').config();
 
 // Import middleware
-const { 
-  errorHandler, 
-  notFoundHandler, 
+const {
+  errorHandler,
+  notFoundHandler,
   timeoutHandler,
-  asyncHandler 
+  asyncHandler
 } = require('./middleware/error');
 
 // Enhanced Error Handling
@@ -76,8 +76,19 @@ app.use(helmet({
 }));
 
 // CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://grievance-iq-new.vercel.app'
+];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -139,7 +150,7 @@ app.get('/', asyncHandler(async (req, res) => {
     },
     realtime: {
       enabled: true,
-      connections: realtimeEventService.isInitialized ? 
+      connections: realtimeEventService.isInitialized ?
         realtimeEventService.getStatistics().totalClients : 0
     },
     endpoints: {
@@ -152,16 +163,16 @@ app.get('/', asyncHandler(async (req, res) => {
       websocket_status: '/api/websocket/status'
     }
   };
-  
+
   res.json(stats);
 }));
 
 // WebSocket status endpoint - wrapped with asyncHandler
 app.get('/api/websocket/status', asyncHandler(async (req, res) => {
-  const stats = realtimeEventService.isInitialized ? 
-    realtimeEventService.getStatistics() : 
+  const stats = realtimeEventService.isInitialized ?
+    realtimeEventService.getStatistics() :
     { status: 'offline', totalClients: 0 };
-  
+
   res.json({
     success: true,
     message: 'WebSocket service status',
@@ -179,15 +190,15 @@ app.use(enhancedErrorHandler);
 async function startServer() {
   try {
     console.log('🚀 Starting BharatChain Server...');
-    
+
     // Test database connection
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully.');
 
     // Sync database models
-    await sequelize.sync({ 
+    await sequelize.sync({
       alter: process.env.NODE_ENV === 'development',
-      force: false 
+      force: false
     });
     console.log('✅ Database models synchronized.');
 
@@ -196,7 +207,7 @@ async function startServer() {
       const network = process.env.NETWORK || 'hardhat';
       const privateKey = process.env.PRIVATE_KEY;
       const forceOffline = process.env.FORCE_OFFLINE === 'true';
-      
+
       if (forceOffline) {
         console.log('🔄 Force offline mode enabled via environment variable');
         await blockchainService.initialize(network, privateKey, true);
@@ -206,16 +217,16 @@ async function startServer() {
         console.log('⚠️ Private key not provided, blockchain will run in read-only mode.');
         await blockchainService.initialize(network);
       }
-      
+
       // Setup blockchain event listeners
       blockchainService.on('connected', (info) => {
         console.log(`🎉 Blockchain connected to ${info.network} (Chain ID: ${info.chainId})`);
       });
-      
+
       blockchainService.on('offline', (info) => {
         console.log(`🔄 Blockchain switched to offline mode: ${info.reason}`);
       });
-      
+
       blockchainService.on('transaction', (tx) => {
         console.log(`📝 Transaction processed: ${tx.transactionHash} (${tx.type})`);
       });
@@ -242,7 +253,7 @@ async function startServer() {
     try {
       await notificationService.initialize();
       console.log('✅ Notification service initialized successfully.');
-      
+
       // Setup blockchain event notifications if both services are available
       if (blockchainService.isInitialized && realtimeEventService.isInitialized) {
         notificationService.setupBlockchainEventNotifications();
@@ -312,16 +323,16 @@ async function startServer() {
     // Graceful shutdown function (only call when truly shutting down)
     const gracefulShutdown = (signal) => {
       console.log(`🛑 Received ${signal}. Shutting down gracefully...`);
-      
+
       // Close real-time service
       if (realtimeEventService.isInitialized) {
         realtimeEventService.shutdown();
       }
-      
+
       // Close server
       server.close(() => {
         console.log('✅ HTTP server closed.');
-        
+
         // Close database connection
         sequelize.close().then(() => {
           console.log('✅ Database connection closed.');
@@ -334,7 +345,7 @@ async function startServer() {
 
     // Only handle explicit shutdown signals - not development interrupts
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-    
+
     // Handle SIGINT more carefully - allow multiple for force quit
     let sigintCount = 0;
     process.on('SIGINT', () => {
